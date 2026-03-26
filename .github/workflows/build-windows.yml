@@ -1,12 +1,15 @@
-name: Build Windows EXE
+name: Build Apps
 
 on:
   workflow_dispatch:  # Spustí se ručně kliknutím na tlačítko v GitHubu
 
-jobs:
-  build:
-    runs-on: windows-latest
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+jobs:
+
+  build-windows:
+    runs-on: windows-latest
     steps:
       - name: Checkout kódu
         uses: actions/checkout@v4
@@ -27,4 +30,31 @@ jobs:
         with:
           name: Bidli-Foto-App-Windows
           path: dist/Bidli-Foto-App/
+          retention-days: 30
+
+  build-mac-intel:
+    runs-on: macos-13  # macOS 13 = Intel x86_64
+    steps:
+      - name: Checkout kódu
+        uses: actions/checkout@v4
+
+      - name: Nastavení Pythonu 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Instalace závislostí
+        run: pip install -r requirements.txt
+
+      - name: Sestavení .app pomocí PyInstaller
+        run: pyinstaller Bidli-Foto-App-Mac.spec --clean
+
+      - name: Zabalení .app do ZIP
+        run: zip -r Bidli-Foto-App-Intel.zip dist/Bidli-Foto-App.app
+
+      - name: Upload hotového buildu
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bidli-Foto-App-Mac-Intel
+          path: Bidli-Foto-App-Intel.zip
           retention-days: 30
