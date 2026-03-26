@@ -32,8 +32,8 @@ jobs:
           path: dist/Bidli-Foto-App/
           retention-days: 30
 
-  build-mac-intel:
-    runs-on: macos-12  # macOS 12 = Intel x86_64
+  build-mac-universal:
+    runs-on: macos-latest  # Apple Silicon – umí sestavit universal2 pro Intel i M-chip
     steps:
       - name: Checkout kódu
         uses: actions/checkout@v4
@@ -46,15 +46,15 @@ jobs:
       - name: Instalace závislostí
         run: pip install -r requirements.txt
 
-      - name: Sestavení .app pomocí PyInstaller
-        run: pyinstaller Bidli-Foto-App-Mac.spec --clean
+      - name: Sestavení universal2 .app pomocí PyInstaller
+        run: pyinstaller Bidli-Foto-App-Mac.spec --target-arch universal2 --clean
 
       - name: Zabalení .app do ZIP
-        run: zip -r Bidli-Foto-App-Intel.zip dist/Bidli-Foto-App.app
+        run: zip -r Bidli-Foto-App-Universal.zip dist/Bidli-Foto-App.app
 
       - name: Upload hotového buildu
         uses: actions/upload-artifact@v4
         with:
-          name: Bidli-Foto-App-Mac-Intel
-          path: Bidli-Foto-App-Intel.zip
+          name: Bidli-Foto-App-Mac-Universal
+          path: Bidli-Foto-App-Universal.zip
           retention-days: 30
