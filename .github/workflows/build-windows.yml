@@ -32,22 +32,22 @@ jobs:
           path: dist/Bidli-Foto-App/
           retention-days: 30
 
-  build-mac-universal:
-    runs-on: macos-latest  # Apple Silicon – umí sestavit universal2 pro Intel i M-chip
+  build-mac-intel:
+    runs-on: macos-latest  # arm64 runner, ale sestavíme pro x86_64 přes Rosetta
     steps:
       - name: Checkout kódu
         uses: actions/checkout@v4
 
-      - name: Nastavení Pythonu 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
+      - name: Instalace x86_64 Pythonu 3.9 z python.org
+        run: |
+          curl -O https://www.python.org/ftp/python/3.9.13/python-3.9.13-macosx10.9.pkg
+          sudo installer -pkg python-3.9.13-macosx10.9.pkg -target /
 
-      - name: Instalace závislostí
-        run: pip install -r requirements.txt
+      - name: Instalace závislostí pro x86_64
+        run: arch -x86_64 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3.9 -m pip install -r requirements.txt
 
       - name: Sestavení x86_64 .app pomocí PyInstaller (Intel)
-        run: pyinstaller Bidli-Foto-App-Mac.spec --clean
+        run: arch -x86_64 /Library/Frameworks/Python.framework/Versions/3.9/bin/python3.9 -m PyInstaller Bidli-Foto-App-Mac.spec --clean
 
       - name: Zabalení .app do ZIP
         run: zip -r Bidli-Foto-App-Intel.zip dist/Bidli-Foto-App.app
