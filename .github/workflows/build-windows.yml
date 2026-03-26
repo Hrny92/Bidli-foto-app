@@ -46,15 +46,15 @@ jobs:
       - name: Instalace závislostí
         run: pip install -r requirements.txt
 
-      - name: Sestavení universal2 .app pomocí PyInstaller
-        run: pyinstaller Bidli-Foto-App-Mac.spec --target-arch universal2 --clean
+      - name: Sestavení x86_64 .app pomocí PyInstaller (Intel)
+        run: pyinstaller Bidli-Foto-App-Mac.spec --target-arch x86_64 --clean
 
       - name: Zabalení .app do ZIP
-        run: zip -r Bidli-Foto-App-Universal.zip dist/Bidli-Foto-App.app
+        run: zip -r Bidli-Foto-App-Intel.zip dist/Bidli-Foto-App.app
 
       - name: Upload hotového buildu
         uses: actions/upload-artifact@v4
         with:
-          name: Bidli-Foto-App-Mac-Universal
-          path: Bidli-Foto-App-Universal.zip
+          name: Bidli-Foto-App-Mac-Intel
+          path: Bidli-Foto-App-Intel.zip
           retention-days: 30
