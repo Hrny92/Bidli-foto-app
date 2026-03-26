@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRM Photo Optimizer | Bidli 2026</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body, html { overflow: hidden; height: 100%; position: fixed; width: 100%; }
+        
+        /* Styl pro smazání fotky */
+        .remove-photo {
+            position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white;
+            width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 14px; font-weight: bold; line-height: 0; cursor: pointer; z-index: 30; border: 2px solid #fff;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 174, 239, 0.3); border-radius: 10px; }
+        
+        /* FAQ styly */
+        .faq-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0; }
+        .faq-question { color: #00AEEF; font-weight: 800; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .faq-answer { color: rgba(255,255,255,0.4); font-size: 14px; line-height: 1.4; margin-top: 4px; }
+
+        /* Modal styl */
+        #faqModal { transition: opacity 0.3s ease; }
+    </style>
+</head>
+<body class="bg-black text-white font-sans antialiased">
+
+    <div class="h-[100dvh] w-full flex flex-col overflow-hidden">
+        
+        <header class="bg-gradient-to-r from-[#00AEEF] to-[#0072BC] px-12 py-8 flex items-center justify-between shrink-0 shadow-lg z-20">
+            
+                <div class="w-24">
+                    <img src="static/logo-white.svg" alt="logo" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <h1 class="text-xl font-black uppercase tracking-tight leading-none">Fotky do globalu</h1>
+                    <p class="text-white/70 text-[9px] font-medium uppercase tracking-widest mt-1">úprava portrétů během pár vteřin</p>
+                </div>
+            
+        </header>
+
+        <main class="flex-1 flex overflow-hidden">
+            
+            <section class="flex-1 flex flex-col p-4 sm:p-8 overflow-hidden bg-[#111]">
+                <form method="post" enctype="multipart/form-data" id="uploadForm" class="flex flex-col h-full">
+                    <div class="flex-1 min-h-0 relative">
+                        <label class="flex flex-col items-center justify-center w-full h-full border-2 border-dashed border-white/10 rounded-[2rem] bg-white/[0.02] hover:bg-white/[0.05] hover:border-[#00AEEF]/40 transition-all cursor-pointer">
+                            <div id="uploadPlaceholder" class="flex flex-col items-center justify-center text-center p-6">
+                                <div class="w-14 h-14 bg-[#00AEEF]/10 rounded-full flex items-center justify-center mb-4 text-[#00AEEF]">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                </div>
+                                <p class="text-base font-bold">Vyberte fotky</p>
+                                <p class="text-white/30 text-[9px] uppercase font-black tracking-widest mt-2 tracking-widest">Hromadný výběr</p>
+                            </div>
+                            <div id="previewContainer" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4 w-full h-full overflow-y-auto custom-scroll"></div>
+                            <input type="file" id="photoInput" class="hidden" multiple />
+                        </label>
+                    </div>
+
+                    <div class="mt-4 shrink-0">
+                        <button type="submit" id="submitBtn" class="hidden w-full bg-[#00AEEF] hover:bg-[#0072BC] text-white font-black py-4 rounded-2xl transition-all shadow-xl active:scale-[0.97] uppercase tracking-widest text-sm">
+                            Zpracovat výběr (<span id="fileCount">0</span>)
+                        </button>
+                        <div id="loader" class="hidden text-center py-2 animate-pulse">
+                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-4 border-[#00AEEF] border-t-transparent mb-1"></div>
+                            <p class="text-white/50 text-[9px] uppercase font-black tracking-widest">AI Pracuje...</p>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <aside class="hidden lg:flex w-[400px] bg-black/50 p-8 flex-col border-l border-white/5 overflow-hidden">
+                <h3 class="text-[#00AEEF] font-black uppercase text-xl tracking-[0.2em] mb-6 shrink-0">FAQ / Nápověda</h3>
+                <div id="faqContent" class="flex-1 overflow-y-auto custom-scroll pr-2">
+                    </div>
+            </aside>
+        </main>
+
+        <footer class="bg-black border-t border-white/5 px-6 py-4 flex justify-between items-center shrink-0 z-20">
+            <div class="flex gap-4 text-[9px] font-bold text-[#00AEEF] tracking-widest">
+                <span>150x200px</span>
+                <span>1000x1000px</span>
+                <span>1980x1980px</span>
+            </div>
+            <button onclick="toggleModal(true)" class="lg:hidden text-[#00AEEF] text-[9px] font-black uppercase tracking-widest border border-[#00AEEF]/30 px-3 py-1 rounded-full hover:bg-[#00AEEF]/10">
+                [ FAQ ]
+            </button>
+            <div class="hidden sm:block text-[10px] text-white/20 font-medium italic">
+                www.hrncirovistudio.cz &nbsp;|&nbsp; © 2026 BIDLI holding, a.s. Všechna práva vyhrazena.
+
+            </div>
+        </footer>
+    </div>
+
+    <div id="faqModal" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 hidden opacity-0">
+        <div class="bg-[#111] w-full max-w-sm rounded-[2rem] border border-white/10 flex flex-col max-h-[70vh] shadow-2xl overflow-hidden">
+            <div class="bg-[#00AEEF] p-6 text-white flex justify-between items-center">
+                <h3 class="font-black uppercase text-xs tracking-widest">Časté dotazy</h3>
+                <button onclick="toggleModal(false)" class="text-white font-bold text-xl leading-none">&times;</button>
+            </div>
+            <div id="modalFaqContent" class="p-6 overflow-y-auto custom-scroll">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const faqData = [
+            { q: "Jaké formáty mohu nahrát?", a: "Podporujeme JPG a PNG. Doporučujeme fotky s jasným osvětlením pro nejlepší ořez." },
+            { q: "Co přesně po stažení dostanu?", a: "Každá fotka má 3 verze: 1980x1980px a 1000x1000px PNG (průhledné) + 150x200px JPG (bílé pozadí)." },
+            { q: "Hromadné nahrávání?", a: "Ano. Můžete vybrat více fotek najednou. Po stažení naleznete všechny v jednom společném ZIPu." },
+            { q: "Jsou má data v bezpečí?", a: "Fotky existují pouze v paměti během zpracování a nikam se neukládají." },
+            { q: "Doporučení", a: "Mějte vždy fotky pojmenované dle daného člověka ve formátu Jmeno-Prijmeni (bez diakritiky)" }
+        ];
+
+        // Vložení FAQ do obou míst
+        function loadFaq() {
+            const items = faqData.map(item => `
+                <div class="faq-item">
+                    <div class="faq-question text-left">${item.q}</div>
+                    <div class="faq-answer text-left">${item.a}</div>
+                </div>
+            `).join('');
+            document.getElementById('faqContent').innerHTML = items;
+            document.getElementById('modalFaqContent').innerHTML = items;
+        }
+        loadFaq();
+
+        function toggleModal(show) {
+            const modal = document.getElementById('faqModal');
+            if (show) { modal.classList.remove('hidden'); setTimeout(() => modal.classList.add('opacity-100'), 10); } 
+            else { modal.classList.remove('opacity-100'); setTimeout(() => modal.classList.add('hidden'), 300); }
+        }
+
+        const input = document.getElementById('photoInput'), preview = document.getElementById('previewContainer'), placeholder = document.getElementById('uploadPlaceholder'), submitBtn = document.getElementById('submitBtn'), fileCountSpan = document.getElementById('fileCount'), form = document.getElementById('uploadForm'), loader = document.getElementById('loader');
+        let selectedFiles = [];
+
+        function renderPreviews() {
+            preview.innerHTML = ''; fileCountSpan.innerText = selectedFiles.length;
+            if (selectedFiles.length === 0) { preview.classList.add('hidden'); placeholder.classList.remove('hidden'); submitBtn.classList.add('hidden'); return; }
+            placeholder.classList.add('hidden'); preview.classList.remove('hidden'); preview.classList.add('grid'); submitBtn.classList.remove('hidden');
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "relative aspect-square rounded-2xl overflow-hidden border border-white/10 bg-black";
+                    wrapper.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover opacity-80"><div class="remove-photo" onclick="removeFile(event, ${index})">&times;</div>`;
+                    preview.appendChild(wrapper);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+
+        input.addEventListener('change', function() {
+            selectedFiles = [...selectedFiles, ...Array.from(this.files)];
+            this.value = ''; renderPreviews();
+        });
+
+        window.removeFile = (e, index) => {
+            e.preventDefault(); e.stopPropagation();
+            selectedFiles.splice(index, 1); renderPreviews();
+        };
+
+        form.onsubmit = (e) => {
+            e.preventDefault(); submitBtn.classList.add('hidden'); loader.classList.remove('hidden');
+            const formData = new FormData();
+            selectedFiles.forEach(file => formData.append('photo', file));
+            
+            fetch('/', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                // VOLÁNÍ SYSTÉMOVÉHO DIALOGU PŘES PYTHON
+                window.pywebview.api.save_zip(data.zip).then(response => {
+                    loader.classList.add('hidden'); 
+                    submitBtn.classList.remove('hidden');
+                    if (response.includes("Uloženo")) {
+                        selectedFiles = [];
+                        renderPreviews();
+                    }
+                });
+            })
+            .catch(err => {
+                alert("Chyba: " + err);
+                loader.classList.add('hidden'); 
+                submitBtn.classList.remove('hidden');
+            });
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:  # Spustí se ručně kliknutím na tlačítko v GitHubu
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout kódu
+        uses: actions/checkout@v4
+
+      - name: Nastavení Pythonu 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Instalace závislostí
+        run: pip install -r requirements.txt
+
+      - name: Sestavení EXE pomocí PyInstaller
+        run: pyinstaller Bidli-Foto-App.spec --clean
+
+      - name: Upload hotového buildu
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bidli-Foto-App-Windows
+          path: dist/Bidli-Foto-App/
+          retention-days: 30
