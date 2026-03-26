@@ -33,7 +33,7 @@ jobs:
           retention-days: 30
 
   build-mac-intel:
-    runs-on: macos-13  # macOS 13 = Intel x86_64
+    runs-on: macos-12  # macOS 12 = Intel x86_64
     steps:
       - name: Checkout kódu
         uses: actions/checkout@v4
