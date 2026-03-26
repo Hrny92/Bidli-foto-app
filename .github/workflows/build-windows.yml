@@ -47,7 +47,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Sestavení x86_64 .app pomocí PyInstaller (Intel)
-        run: pyinstaller Bidli-Foto-App-Mac.spec --target-arch x86_64 --clean
+        run: pyinstaller Bidli-Foto-App-Mac.spec --clean
 
       - name: Zabalení .app do ZIP
         run: zip -r Bidli-Foto-App-Intel.zip dist/Bidli-Foto-App.app
