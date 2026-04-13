@@ -172,19 +172,20 @@
             fetch('/', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
-                // VOLÁNÍ SYSTÉMOVÉHO DIALOGU PŘES PYTHON
-                window.pywebview.api.save_zip(data.zip).then(response => {
-                    loader.classList.add('hidden'); 
-                    submitBtn.classList.remove('hidden');
-                    if (response.includes("Uloženo")) {
-                        selectedFiles = [];
-                        renderPreviews();
-                    }
-                });
+                loader.classList.add('hidden');
+                submitBtn.classList.remove('hidden');
+                if (data.status === 'ready') {
+                    // Stáhnout ZIP přes Flask endpoint
+                    window.location.href = '/download';
+                    selectedFiles = [];
+                    renderPreviews();
+                } else {
+                    alert("Chyba: " + (data.error || "Neznámá chyba"));
+                }
             })
             .catch(err => {
                 alert("Chyba: " + err);
-                loader.classList.add('hidden'); 
+                loader.classList.add('hidden');
                 submitBtn.classList.remove('hidden');
             });
         };

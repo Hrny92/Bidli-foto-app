@@ -1,7 +1,6 @@
 rembg==2.0.61
 flask==3.1.2
 pillow==11.3.0
-pywebview==6.1
 pyinstaller==6.17.0
 onnxruntime==1.16.3
 numpy==1.26.4
