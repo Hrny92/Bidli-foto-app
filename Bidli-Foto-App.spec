@@ -1,7 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_all
+from PyInstaller.utils.hooks import collect_all, copy_metadata
 
 datas = [('templates', 'templates'), ('static', 'static')]
+datas += copy_metadata('pymatting')
+datas += copy_metadata('rembg')
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('webview')
