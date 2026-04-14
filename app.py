@@ -3,6 +3,7 @@ import io
 import sys
 import zipfile
 import webbrowser
+import traceback
 from threading import Thread, Timer
 from flask import Flask, render_template, request, send_file, jsonify
 from rembg import remove
@@ -24,8 +25,11 @@ app.secret_key = "bidli_photo_optimizer_2026"
 last_zip_data = None
 
 def process_images(input_image_bytes):
-    # AI ořez pozadí – alpha_matting odstraní šedý lem na hranách ořezu
-    no_bg_output = remove(input_image_bytes, alpha_matting=True)
+    # AI ořez pozadí – zkusíme alpha_matting, při chybě fallback
+    try:
+        no_bg_output = remove(input_image_bytes, alpha_matting=True)
+    except Exception:
+        no_bg_output = remove(input_image_bytes, alpha_matting=False)
     no_bg_image = Image.open(io.BytesIO(no_bg_output))
 
     def resize_and_center(img, target_size, transparent=True):
@@ -71,7 +75,10 @@ def index():
                                            (img_1000, "-1000x1000.png", "PNG"),
                                            (img_150, "-150x200.jpg", "JPEG")]:
                         buf = io.BytesIO()
-                        img.save(buf, format=fmt, quality=95)
+                        if fmt == "JPEG":
+                            img.save(buf, format=fmt, quality=95)
+                        else:
+                            img.save(buf, format=fmt)
                         zip_file.writestr(f"{filename_base}{suffix}", buf.getvalue())
 
             last_zip_data = zip_buffer.getvalue()
@@ -79,8 +86,9 @@ def index():
             return jsonify({"status": "ready"})
 
         except Exception as e:
-            print(f"CHYBA SERVERU: {str(e)}")
-            return jsonify({"error": str(e)}), 500
+            tb = traceback.format_exc()
+            print(f"CHYBA SERVERU: {tb}")
+            return jsonify({"error": str(e), "traceback": tb}), 500
 
     return render_template("index.html")
 
